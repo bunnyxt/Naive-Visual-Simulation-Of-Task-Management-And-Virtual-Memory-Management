@@ -1,5 +1,7 @@
 package simulation;
 
+import java.util.ArrayList;
+
 public class Main {
 
 	public static void main(String[] args) {
@@ -8,6 +10,7 @@ public class Main {
 		
 		Disk disk = new Disk();
 
+		/*
 		byte data = 100;
 		for(int i = 0; i < 100; i++) {
 			disk.set(0, 0, i, data);
@@ -18,7 +21,11 @@ public class Main {
 				e.printStackTrace();
 			}
 		}
-
+		*/
+		
+		// read tasks
+		ArrayList<Task> tasks = TaskLoader.LoadTasks("tasks.txt");
+		System.out.println(tasks.size());
 	}
 
 }
