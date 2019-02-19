@@ -15,5 +15,9 @@ class InstructionCalcRI extends Instruction {
 		this.reg2 = reg2;
 		this.op = op;
 	}
+	
+	public String ToString() {
+		return "r" + reg1 + " " + op + " " + imm + " -> r" + reg2;
+	}
 
 }

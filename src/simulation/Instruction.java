@@ -11,5 +11,9 @@ class Instruction {
 		this.insType = insType;
 		this.insLeftTime = insLeftTime;
 	}
+	
+	public String ToString() {
+		return "instruction";
+	}
 
 }

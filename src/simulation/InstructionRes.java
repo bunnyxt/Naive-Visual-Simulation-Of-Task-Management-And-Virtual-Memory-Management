@@ -11,4 +11,12 @@ class InstructionRes extends Instruction {
 		this.resourceId = resourceId;
 	}
 
+	public String ToString() {
+		if (releaseFlag == 1) {
+			return "release res " + resourceId; 
+		} else {
+			return "request res " + resourceId;
+		}
+	}
+	
 }
