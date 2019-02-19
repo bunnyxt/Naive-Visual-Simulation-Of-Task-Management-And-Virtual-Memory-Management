@@ -30,4 +30,5 @@ class Cpu {
 		this.IR = context.IR;
 		this.PSW = context.PSW;
 	}
+	
 }
