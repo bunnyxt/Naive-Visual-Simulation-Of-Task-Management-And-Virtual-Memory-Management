@@ -31,7 +31,7 @@ public class Primitive {
 	}
 	
 	// select process from ready queue to running queue
-	public static void SelectIn(Pcb pcb, Queue<Pcb> readyQueue, Queue<Pcb> runningQueue) {
+	public static void SelectIn(Pcb pcb, Queue<Pcb> readyQueue, Queue<Pcb> runningQueue, Cpu cpu) {
 		
 		// remove pcb from ready queue
 		readyQueue.remove(pcb);
@@ -44,13 +44,16 @@ public class Primitive {
 		// set time piece
 		pcb.timePieceLeft = 200;
 		
+		// recover cpu context
+		cpu.RecoverContext(pcb.context);
+		
 		// change status
 		pcb.status = Pcb.ProcessStatus.RUNNING;
 		
 	}
 	
 	// exchange process from running queue to ready queue
-	public static void ExchangeOut(Pcb pcb, Queue<Pcb> runningQueue, Queue<Pcb> readyQueue) {
+	public static void ExchangeOut(Pcb pcb, Queue<Pcb> runningQueue, Queue<Pcb> readyQueue, Cpu cpu) {
 		
 		// remove pcb from running queue
 		runningQueue.remove(pcb);
@@ -60,13 +63,16 @@ public class Primitive {
 		readyQueue.offer(pcb);
 		System.out.println("Pcb " + pcb.pcbId + " added to ready queue.");
 		
+		// protect cpu context
+		pcb.context = cpu.ProtectContext();
+		
 		// change status
 		pcb.status = Pcb.ProcessStatus.READY;
 		
 	}
 	
 	// move process from running queue to wait queue
-	public static void Wait(Pcb pcb, Queue<Pcb> runningQueue, Queue<Pcb> waitQueue, int waitTime) {
+	public static void Wait(Pcb pcb, Queue<Pcb> runningQueue, Queue<Pcb> waitQueue, int waitTime, Cpu cpu) {
 		
 		// remove pcb from running queue
 		runningQueue.remove(pcb);
@@ -78,6 +84,9 @@ public class Primitive {
 		
 		// set wait time
 		pcb.waitTimeLeft = waitTime;
+		
+		// protect cpu context
+		pcb.context = cpu.ProtectContext();
 		
 		// change status
 		pcb.status = Pcb.ProcessStatus.WAIT;

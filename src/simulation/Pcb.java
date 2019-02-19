@@ -15,6 +15,8 @@ class Pcb {
 	public int timePieceLeft;
 	public int waitTimeLeft;
 	
+	public CpuContext context;
+	
 	public Pcb(Task task, int pcbId) {
 		oriTask = task;
 		this.pcbId = pcbId;
@@ -25,6 +27,8 @@ class Pcb {
 		nowInsIndex = 0;
 		timePieceLeft = 200;
 		waitTimeLeft = 0;
+		
+		context = new CpuContext();
 	}
 	
 	public enum ProcessStatus {
