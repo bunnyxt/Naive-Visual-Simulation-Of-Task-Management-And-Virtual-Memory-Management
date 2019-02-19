@@ -12,6 +12,7 @@ public class TaskLoader {
 		ArrayList<Task> tasks = null;
 		File file = new File(fileName);
 		if (file.exists()) {
+			System.out.println("Now load tasks from file " + fileName + "...");
 			tasks = new ArrayList<Task>();
 			Task task = null;
 			boolean isNewTask = true;
@@ -26,6 +27,7 @@ public class TaskLoader {
 						int insNum = Integer.parseInt(numbers[1]);
 						int inTime = Integer.parseInt(numbers[2]);
 						task = new Task(taskId, insNum, inTime);
+						System.out.println("Task " + taskId + " with " + insNum + " instruction(s) proposed at " + inTime + "ms loaded.");
 						tasks.add(task);
 						insLeft = insNum;
 						isNewTask = false;
@@ -42,6 +44,7 @@ public class TaskLoader {
 						String op;
 						int writeFlag;
 						int address;
+						int reg;
 						int releaseFlag;
 						int resourceId;
 						switch (insType) {
@@ -62,7 +65,8 @@ public class TaskLoader {
 						case 2:
 							writeFlag = Integer.parseInt(numbers[3]);
 							address = Integer.parseInt(numbers[4]);
-							ins = new InstructionIO(insId, insType, insLeftTime, writeFlag, address);
+							reg = Integer.parseInt(numbers[5]);
+							ins = new InstructionIO(insId, insType, insLeftTime, writeFlag, address, reg);
 							break;
 						case 3:
 							releaseFlag = Integer.parseInt(numbers[3]);
@@ -72,6 +76,7 @@ public class TaskLoader {
 						default:
 							break;
 						}
+						System.out.println("Instruction " + insId + " : " + ins.ToString() + " with running time " + insLeftTime + "ms loaded.");
 						task.insList.add(ins);
 						insLeft--;
 						if (insLeft == 0) {
@@ -80,6 +85,7 @@ public class TaskLoader {
 					}
 				}
 				bf.close();
+				System.out.println("Tasks loaded successfully!");
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
