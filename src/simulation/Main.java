@@ -12,12 +12,22 @@ public class Main {
 		Cpu cpu = new Cpu();
 		Memory memory = new Memory();
 		Disk disk = new Disk();
-		Executor executor = new Executor(cpu, memory, disk);
+		
+		// initialize semaphores
+		int semaphoreNum = 4;
+		Semaphore[] semaphores = new Semaphore[semaphoreNum];
+		semaphores[0] = new Semaphore(0);
+		semaphores[1] = new Semaphore(1);
+		semaphores[2] = new Semaphore(1);
+		semaphores[3] = new Semaphore(1);
 		
 		// create queues
 		Queue<Pcb> readyQueue = new LinkedList<Pcb>();
 		Queue<Pcb> runningQueue = new LinkedList<Pcb>();
 		Queue<Pcb> waitQueue = new LinkedList<Pcb>();
+		
+		// create executor
+		Executor executor = new Executor(cpu, memory, disk, semaphores, readyQueue, runningQueue, waitQueue);
 		
 		// load tasks
 		ArrayList<Task> tasks = TaskLoader.LoadTasks("tasks.txt");
@@ -26,7 +36,7 @@ public class Main {
 		int nowTime = 0;
 		
 		// speed delay
-		double speedDelay = 1.0;
+		double speedDelay = 10.0;
 		
 		// main loop
 		while (!TaskHelper.AllTasksFinished(tasks)) {
@@ -58,7 +68,7 @@ public class Main {
 					// now instruction finished
 					
 					// check whether more instructions left
-					if (runningPcb.nowInsIndex + 1 == runningPcb.insNum) {
+					if (runningPcb.nowInsIndex + 1 >= runningPcb.insNum) {
 						// no more instructions left
 						
 						// withdraw process
@@ -81,18 +91,26 @@ public class Main {
 							// no enough time for next instruction
 							
 							// exchange out
-							Primitive.ExchangeOut(runningPcb, runningQueue, readyQueue);
+							Primitive.ExchangeOut(runningPcb, runningQueue, readyQueue, cpu);
 							
 						} else {
 							// has enough time for next instruction
 							
 							// execute instruction
-							executor.Execute(nextInstruction);
+							int returnCode = executor.Execute(nextInstruction);
 							
-							// modify time
-							System.out.println("Instruction " + nextInstruction.insId + " time left " + nextInstruction.insLeftTime + "ms, time piece left " + runningPcb.timePieceLeft + "ms.");
-							nextInstruction.insLeftTime -= 10;
-							runningPcb.timePieceLeft -= 10;
+							switch (returnCode) {
+							case 3:
+								// now pcb in wait queue
+								break;
+							case 0:
+							default:
+								// modify time
+								System.out.println("Instruction " + nextInstruction.insId + " time left " + nextInstruction.insLeftTime + "ms, time piece left " + runningPcb.timePieceLeft + "ms.");
+								nextInstruction.insLeftTime -= 10;
+								runningPcb.timePieceLeft -= 10;
+								break;
+							}
 						}
 					}
 				} else {
@@ -119,6 +137,10 @@ public class Main {
 					
 					// add to list
 					wakenPcbs.add(pcb);
+				} else if (pcb.waitTimeLeft == -1) {
+					// blocked due to semaphore
+					
+					System.out.println("Pcb " + pcb.pcbId + " continue waiting...");
 				} else {
 					// cannot be waken up
 					
@@ -143,28 +165,50 @@ public class Main {
 				Pcb firstPcb = readyQueue.peek();
 				
 				// select in first pcb
-				Primitive.SelectIn(firstPcb, readyQueue, runningQueue);
+				Primitive.SelectIn(firstPcb, readyQueue, runningQueue, cpu);
 				
-				// get first instruction
-				Instruction firstInstrruction = firstPcb.insList.get(firstPcb.nowInsIndex);
-				
-				// check time piece left time enough or not
-				if (firstPcb.timePieceLeft < firstInstrruction.insLeftTime) {
-					// no enough time for next instruction
+				// check whether more instructions left
+				if (firstPcb.nowInsIndex >= firstPcb.insNum) {
+					// no more instructions left
 					
-					// exchange out
-					Primitive.ExchangeOut(firstPcb, runningQueue, readyQueue);
+					// withdraw process
+					Primitive.Withdraw(firstPcb, runningQueue);
 					
+					// set task finished
+					firstPcb.oriTask.status = Task.TaskStatus.FINISHED;
+					System.out.println("Task " + firstPcb.oriTask.taskId + " finished.");
 				} else {
-					// has enough time for next instruction
+					// has more instructions left
 					
-					// execute instruction
-					executor.Execute(firstInstrruction);
+					// get first instruction
+					Instruction firstInstrruction = firstPcb.insList.get(firstPcb.nowInsIndex);
 					
-					// modify time
-					System.out.println("Instruction " + firstInstrruction.insId + " time left " + firstInstrruction.insLeftTime + "ms, time piece left " + firstPcb.timePieceLeft + "ms.");
-					firstInstrruction.insLeftTime -= 10;
-					firstPcb.timePieceLeft -= 10;
+					// check time piece left time enough or not
+					if (firstPcb.timePieceLeft < firstInstrruction.insLeftTime) {
+						// no enough time for next instruction
+						
+						// exchange out
+						Primitive.ExchangeOut(firstPcb, runningQueue, readyQueue, cpu);
+						
+					} else {
+						// has enough time for next instruction
+						
+						// execute instruction
+						int returnCode = executor.Execute(firstInstrruction);
+						
+						switch (returnCode) {
+						case 3:
+							// now pcb in wait queue
+							break;
+						case 0:
+						default:
+							// modify time
+							System.out.println("Instruction " + firstInstrruction.insId + " time left " + firstInstrruction.insLeftTime + "ms, time piece left " + firstPcb.timePieceLeft + "ms.");
+							firstInstrruction.insLeftTime -= 10;
+							firstPcb.timePieceLeft -= 10;
+							break;
+						}
+					}
 				}
 				
 			}
@@ -174,7 +218,7 @@ public class Main {
 			
 			// make time delay
 			try {
-				Thread.sleep(new Double(nowTime * speedDelay).longValue());
+				Thread.sleep(new Double(10 * speedDelay).longValue());
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

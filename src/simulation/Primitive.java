@@ -22,7 +22,7 @@ public class Primitive {
 		
 		// remove pcb from queue
 		runningQueue.remove(pcb);
-		System.out.println("Pcb" + pcb.pcbId + " removed from running queue.");
+		System.out.println("Pcb " + pcb.pcbId + " removed from running queue.");
 		
 		// change status
 		pcb.status = Pcb.ProcessStatus.FINISHED;
@@ -57,7 +57,7 @@ public class Primitive {
 		
 		// remove pcb from running queue
 		runningQueue.remove(pcb);
-		System.out.println("Pcb" + pcb.pcbId + " removed from running queue.");
+		System.out.println("Pcb " + pcb.pcbId + " removed from running queue.");
 		
 		// add pcb to ready queue
 		readyQueue.offer(pcb);
@@ -76,7 +76,7 @@ public class Primitive {
 		
 		// remove pcb from running queue
 		runningQueue.remove(pcb);
-		System.out.println("Pcb" + pcb.pcbId + " removed from running queue.");
+		System.out.println("Pcb " + pcb.pcbId + " removed from running queue.");
 		
 		// add pcb to wait queue
 		waitQueue.offer(pcb);
@@ -98,11 +98,14 @@ public class Primitive {
 		
 		// remove pcb from wait queue
 		waitQueue.remove(pcb);
-		System.out.println("Pcb" + pcb.pcbId + " removed from wait queue.");
+		System.out.println("Pcb " + pcb.pcbId + " removed from wait queue.");
 		
 		// add pcb to ready queue
 		readyQueue.offer(pcb);
 		System.out.println("Pcb " + pcb.pcbId + " added to ready queue.");
+		
+		// move to next instruction
+		pcb.nowInsIndex++;
 		
 		// change status 
 		pcb.status = Pcb.ProcessStatus.READY;
