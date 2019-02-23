@@ -1,6 +1,6 @@
 package simulation;
 
-class Instruction {
+abstract class Instruction {
 	
 	public final int insId;
 	public final int insType;
