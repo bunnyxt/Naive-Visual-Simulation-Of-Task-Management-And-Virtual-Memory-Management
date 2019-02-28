@@ -18,11 +18,25 @@ public class Primitive {
 	}
 	
 	// withdraw process
-	public static void Withdraw(Pcb pcb, Queue<Pcb> runningQueue) {
+	public static void Withdraw(Pcb pcb, Queue<Pcb> runningQueue, Semaphore[] semaphores) {
 		
 		// remove pcb from queue
 		runningQueue.remove(pcb);
 		System.out.println("Pcb " + pcb.pcbId + " removed from running queue.");
+		
+		// clear resources
+		for (Semaphore semaphore : semaphores) {
+			boolean flag = false;
+			for (Pcb pcbInList : semaphore.list) {
+				if (pcbInList == pcb) {
+					flag = true;
+					break;
+				}
+			}
+			if (flag == true) {
+				semaphore.list.remove(pcb);
+			}
+		}
 		
 		// change status
 		pcb.status = Pcb.ProcessStatus.FINISHED;
@@ -84,6 +98,9 @@ public class Primitive {
 		
 		// set wait time
 		pcb.waitTimeLeft = waitTime;
+		
+		// initialize wait tiem count
+		pcb.waitTimeCount = 0;
 		
 		// protect cpu context
 		pcb.context = cpu.ProtectContext();
