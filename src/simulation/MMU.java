@@ -21,7 +21,7 @@ public class MMU {
 			fastTable.DispalyFastTable();	// 输出快表内容			
 			pageTable.DispalyPageTable();   // 输出页表内容
 		} else { // 快表没有命中 
-			System.out.println("快表未命中，进入页表");				
+			System.out.println("快表未命中，进入页表"); 	
 			flag = pageTable.IsInTable(pageid); // 是否在页表中
 			if (flag == 1) { // 页表命中
 				blockid = pageTable.SearchPageId(pageid); // 搜索页表，输入页号，返回块号

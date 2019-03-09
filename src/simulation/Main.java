@@ -11,6 +11,11 @@ public class Main {
 		// initialize components
 		Cpu cpu = new Cpu();
 		Memory memory = new Memory();
+		Page page[] = new Page[3];
+		for (int i = 0; i < 3; i++) {
+			page[i] = new Page(-1, -1, 0, 0);
+		}			
+		FastTable fastTable = new FastTable(page, 3);
 		Disk disk = new Disk();
 		
 		// initialize semaphores
@@ -72,7 +77,7 @@ public class Main {
 						// no more instructions left
 						
 						// withdraw process
-						Primitive.Withdraw(runningPcb, runningQueue);
+						Primitive.Withdraw(runningPcb, runningQueue, semaphores);
 						
 						// set task finished
 						runningPcb.oriTask.status = Task.TaskStatus.FINISHED;
@@ -131,6 +136,11 @@ public class Main {
 			// select pcbs which can be waken up and modify other pcbs' time 
 			for (Pcb pcb : waitQueue) {
 				
+				// deadlock detection
+				if (pcb.waitTimeCount >= 1000) {
+					// TODO withdraw process
+				}
+				
 				// check whether can be waken up
 				if (pcb.waitTimeLeft == 0) {
 					// can be waken up
@@ -140,11 +150,13 @@ public class Main {
 				} else if (pcb.waitTimeLeft == -1) {
 					// blocked due to semaphore
 					
-					System.out.println("Pcb " + pcb.pcbId + " continue waiting...");
+					// modify wait time count
+					System.out.println("Pcb " + pcb.pcbId + " has already waited " + pcb.waitTimeCount + "ms, continue waiting...");					
+					pcb.waitTimeCount += 10;
 				} else {
 					// cannot be waken up
 					
-					// modify time
+					// modify wait time left
 					System.out.println("Pcb " + pcb.pcbId + " wait time left " + pcb.waitTimeLeft + "ms.");
 					pcb.waitTimeLeft -= 10;
 				}
@@ -172,7 +184,7 @@ public class Main {
 					// no more instructions left
 					
 					// withdraw process
-					Primitive.Withdraw(firstPcb, runningQueue);
+					Primitive.Withdraw(firstPcb, runningQueue, semaphores);
 					
 					// set task finished
 					firstPcb.oriTask.status = Task.TaskStatus.FINISHED;
