@@ -5,11 +5,11 @@ import java.util.Queue;
 public class Primitive {
 	
 	// create new process
-	public static void Create(Task task, Queue<Pcb> readyQueue) {
+	public static void Create(Jcb job, Queue<Pcb> readyQueue) {
 		
 		// create Pcb
-		Pcb pcb = new Pcb(task, PcbIdAllocator.getNextPcbId());
-		System.out.println("Task " + task.taskId + " proposed and pcb " + pcb.pcbId + " created.");
+		Pcb pcb = new Pcb(job, PcbIdAllocator.getNextPcbId());
+		System.out.println("job " + job.jobId + " proposed and pcb " + pcb.pcbId + " created.");
 		
 		// add to ready queue
 		readyQueue.offer(pcb);

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 class Pcb {
 	
-	public Task oriTask;
+	public Jcb oriJob;
 	
 	public final int pcbId;
 	public final int insNum;
@@ -20,11 +20,11 @@ class Pcb {
 	
 	public PageTable pageTable;
 	
-	public Pcb(Task task, int pcbId) {
-		oriTask = task;
+	public Pcb(Jcb job, int pcbId) {
+		oriJob = job;
 		this.pcbId = pcbId;
-		this.insNum = task.insNum;
-		this.insList = task.insList;
+		this.insNum = job.insNum;
+		this.insList = job.insList;
 		
 		this.status = ProcessStatus.CREATED;
 		nowInsIndex = 0;

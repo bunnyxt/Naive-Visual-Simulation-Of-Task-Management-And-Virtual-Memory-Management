@@ -34,8 +34,8 @@ public class Main {
 		// create executor
 		Executor executor = new Executor(cpu, memory, disk, semaphores, readyQueue, runningQueue, waitQueue);
 		
-		// load tasks
-		ArrayList<Task> tasks = TaskLoader.LoadTasks("tasks.txt");
+		// load jobs
+		ArrayList<Jcb> jobs = JobLoader.Loadjobs("jobs.txt");
 		
 		// time proposed
 		int nowTime = 0;
@@ -44,18 +44,18 @@ public class Main {
 		double speedDelay = 10.0;
 		
 		// main loop
-		while (!TaskHelper.AllTasksFinished(tasks)) {
+		while (!JobHelper.AllJobsFinished(jobs)) {
 			
 			System.out.println("---------- " + nowTime + "ms ----------");
 			
-			// check new tasks
-			for (Task task : tasks) {
-				if (task.inTime == nowTime) {
+			// check new jobs
+			for (Jcb job : jobs) {
+				if (job.inTime == nowTime) {
 					// create process
-					Primitive.Create(task, readyQueue);
+					Primitive.Create(job, readyQueue);
 					
-					// change task status
-					task.status = Task.TaskStatus.IN_QUEUE;
+					// change job status
+					job.status = Jcb.JobStatus.IN_QUEUE;
 				}
 			} 
 			
@@ -79,9 +79,9 @@ public class Main {
 						// withdraw process
 						Primitive.Withdraw(runningPcb, runningQueue, semaphores);
 						
-						// set task finished
-						runningPcb.oriTask.status = Task.TaskStatus.FINISHED;
-						System.out.println("Task " + runningPcb.oriTask.taskId + " finished.");
+						// set job finished
+						runningPcb.oriJob.status = Jcb.JobStatus.FINISHED;
+						System.out.println("job " + runningPcb.oriJob.jobId + " finished.");
 					} else {
 						// has more instructions left
 						
@@ -186,9 +186,9 @@ public class Main {
 					// withdraw process
 					Primitive.Withdraw(firstPcb, runningQueue, semaphores);
 					
-					// set task finished
-					firstPcb.oriTask.status = Task.TaskStatus.FINISHED;
-					System.out.println("Task " + firstPcb.oriTask.taskId + " finished.");
+					// set job finished
+					firstPcb.oriJob.status = Jcb.JobStatus.FINISHED;
+					System.out.println("job " + firstPcb.oriJob.jobId + " finished.");
 				} else {
 					// has more instructions left
 					

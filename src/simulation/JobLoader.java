@@ -6,31 +6,32 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class TaskLoader {
+public class JobLoader {
 	
-	public static ArrayList<Task> LoadTasks(String fileName) {
-		ArrayList<Task> tasks = null;
+	public static ArrayList<Jcb> Loadjobs(String fileName) {
+		ArrayList<Jcb> jobs = null;
 		File file = new File(fileName);
 		if (file.exists()) {
-			System.out.println("Now load tasks from file " + fileName + "...");
-			tasks = new ArrayList<Task>();
-			Task task = null;
-			boolean isNewTask = true;
+			System.out.println("Now load jobs from file " + fileName + "...");
+			jobs = new ArrayList<Jcb>();
+			Jcb job = null;
+			boolean isNewjob = true;
 			int insLeft = 0;
 			try {
 				BufferedReader bf = new BufferedReader(new FileReader(fileName));
 				String textLine;
 				while((textLine = bf.readLine()) != null){
-					if (isNewTask) {
+					if (isNewjob) {
 						String[] numbers = textLine.split(" ");
-						int taskId = Integer.parseInt(numbers[0]);
+						int jobId = Integer.parseInt(numbers[0]);
 						int insNum = Integer.parseInt(numbers[1]);
 						int inTime = Integer.parseInt(numbers[2]);
-						task = new Task(taskId, insNum, inTime);
-						System.out.println("Task " + taskId + " with " + insNum + " instruction(s) proposed at " + inTime + "ms loaded.");
-						tasks.add(task);
+						int memBlockRequired = Integer.parseInt(numbers[3]);
+						job = new Jcb(jobId, insNum, inTime, memBlockRequired);
+						System.out.println("job " + jobId + " with " + insNum + " instruction(s) proposed at " + inTime + "ms loaded.");
+						jobs.add(job);
 						insLeft = insNum;
-						isNewTask = false;
+						isNewjob = false;
 					} else {
 						Instruction ins = null;
 						String[] numbers = textLine.split(" ");
@@ -77,21 +78,21 @@ public class TaskLoader {
 							break;
 						}
 						System.out.println("Instruction " + insId + " : " + ins.ToString() + " with running time " + insLeftTime + "ms loaded.");
-						task.insList.add(ins);
+						job.insList.add(ins);
 						insLeft--;
 						if (insLeft == 0) {
-							isNewTask = true;
+							isNewjob = true;
 						}
 					}
 				}
 				bf.close();
-				System.out.println("Tasks loaded successfully!");
+				System.out.println("jobs loaded successfully!");
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		} 
-		return tasks;
+		return jobs;
 	}
 
 }
