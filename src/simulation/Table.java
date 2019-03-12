@@ -1,14 +1,19 @@
 package simulation;
 
 public abstract class Table {
+	
 	Page page[];
 	int length;
 	int usedlength;
 	
 	//方法
-	Table(Page page1[], int i) {
+	Table(int pageNum) {
+		Page page1[] = new Page[pageNum];
+		for (int i = 0; i < pageNum; i++) {
+			page1[i] = new Page(-1, -1, 0, 0);
+		}
 		page = page1;
-		length = i;
+		length = pageNum;
 		usedlength = 0;
 	}
 	

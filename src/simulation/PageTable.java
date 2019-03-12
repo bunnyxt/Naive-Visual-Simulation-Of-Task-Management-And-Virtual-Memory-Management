@@ -2,8 +2,8 @@ package simulation;
 
 public class PageTable extends Table {
 	
-	PageTable(Page[] page1, int i) {
-		super(page1, i);
+	PageTable(int pageNum) {
+		super(pageNum);
 	}
 	
 	//页表信息
@@ -19,5 +19,5 @@ public class PageTable extends Table {
 	//把新的替换进来
 	void Change(int i, int pageid) {
 		page[i].PageId = pageid;
-	}	
+	}
 }

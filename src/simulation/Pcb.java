@@ -33,13 +33,8 @@ class Pcb {
 		waitTimeCount = 0;
 		
 		context = new CpuContext();
-		
-		//形成页表项
-		Page page[] = new Page[20];
-		for (int i = 0; i < 20; i++) {
-			page[i] = new Page(-1, -1, 0, 0);//参数：页号 块号  是否在内存  访问次数
-		}	
-		pageTable = new PageTable(page, 5); // TODO choose proper length i
+
+		pageTable = new PageTable(job.memBlockRequired);
 	}
 	
 	public enum ProcessStatus {

@@ -8,8 +8,11 @@ public class BlockTable {
 	int length; //表长
 	
 	//方法
-	BlockTable(Block block1[]) {
-		block = block1;
+	BlockTable(int blockNum) {
+		block = new Block[blockNum];
+		for (int i = 0; i < blockNum; i++) {
+			block[i] = new Block(i, 0, -1); // 参数：块号，是否分配，分配的进程号
+		}
 	} //构造函数
 	
 	void InsertBlock(Block x, int i) {

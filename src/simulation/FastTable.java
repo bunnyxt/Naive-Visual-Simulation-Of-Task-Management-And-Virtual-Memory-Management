@@ -2,8 +2,8 @@ package simulation;
 
 public class FastTable extends Table {
 	
-	FastTable(Page[] page1, int i) {
-		super(page1, i);
+	FastTable(int pageNum) {
+		super(pageNum);
 	}
 
 	//快表信息

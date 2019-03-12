@@ -9,7 +9,10 @@ public class Primitive {
 		
 		// create Pcb
 		Pcb pcb = new Pcb(job, PcbIdAllocator.getNextPcbId());
-		System.out.println("job " + job.jobId + " proposed and pcb " + pcb.pcbId + " created.");
+		System.out.println("Job " + job.jobId + " proposed and pcb " + pcb.pcbId + " created.");
+		
+		// allocate memory
+		// TODO allocate block in disk
 		
 		// add to ready queue
 		readyQueue.offer(pcb);
@@ -35,6 +38,7 @@ public class Primitive {
 			}
 			if (flag == true) {
 				semaphore.list.remove(pcb);
+				semaphore.value += 1;
 			}
 		}
 		
@@ -54,6 +58,8 @@ public class Primitive {
 		// add pcb to running queue
 		runningQueue.offer(pcb);
 		System.out.println("Pcb " + pcb.pcbId + " added to running queue.");
+		
+		// TODO select in memory block
 		
 		// set time piece
 		pcb.timePieceLeft = 200;

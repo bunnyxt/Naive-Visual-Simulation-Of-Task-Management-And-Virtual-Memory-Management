@@ -7,6 +7,7 @@ class Executor {
 	public Cpu cpu;
 	public Memory memory;
 	public Disk disk;
+	public FastTable fastTable;
 	
 	public Semaphore[] semaphores;
 	
@@ -14,10 +15,11 @@ class Executor {
 	Queue<Pcb> runningQueue;
 	Queue<Pcb> waitQueue;
 	
-	public Executor(Cpu cpu, Memory memory, Disk disk, Semaphore[] semaphores, Queue<Pcb> readyQueue, Queue<Pcb> runningQueue, Queue<Pcb> waitQueue) {
+	public Executor(Cpu cpu, Memory memory, Disk disk, FastTable fastTable, Semaphore[] semaphores, Queue<Pcb> readyQueue, Queue<Pcb> runningQueue, Queue<Pcb> waitQueue) {
 		this.cpu = cpu;
 		this.memory = memory;
 		this.disk = disk;
+		this.fastTable = fastTable;
 		
 		this.semaphores = semaphores;
 		

@@ -15,11 +15,7 @@ class Memory {
 		storage = new short[size];
 		
 		blockNum = 64;
-		Block block[] = new Block[blockNum];
-		for (int i = 0; i < 64; i++) {
-			block[i] = new Block(i, 0, -1); // 参数：块号，是否分配，分配的进程号
-		}
-		blockTable = new BlockTable(block);
+		blockTable = new BlockTable(blockNum);
 		freeSpace = blockNum;
 		usedSpace = 0;
 	}
