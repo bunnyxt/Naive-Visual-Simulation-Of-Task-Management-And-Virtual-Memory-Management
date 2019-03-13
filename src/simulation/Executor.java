@@ -7,7 +7,9 @@ class Executor {
 	public Cpu cpu;
 	public Memory memory;
 	public Disk disk;
+	public ExchangeArea exchangeArea;
 	public FastTable fastTable;
+	public MMU mmu;
 	
 	public Semaphore[] semaphores;
 	
@@ -15,11 +17,13 @@ class Executor {
 	Queue<Pcb> runningQueue;
 	Queue<Pcb> waitQueue;
 	
-	public Executor(Cpu cpu, Memory memory, Disk disk, FastTable fastTable, Semaphore[] semaphores, Queue<Pcb> readyQueue, Queue<Pcb> runningQueue, Queue<Pcb> waitQueue) {
+	public Executor(Cpu cpu, Memory memory, Disk disk, ExchangeArea exchangeArea, FastTable fastTable, MMU mmu, Semaphore[] semaphores, Queue<Pcb> readyQueue, Queue<Pcb> runningQueue, Queue<Pcb> waitQueue) {
 		this.cpu = cpu;
 		this.memory = memory;
 		this.disk = disk;
+		this.exchangeArea = exchangeArea;
 		this.fastTable = fastTable;
+		this.mmu = mmu;
 		
 		this.semaphores = semaphores;
 		
@@ -28,7 +32,7 @@ class Executor {
 		this.waitQueue = waitQueue;
 	}
 	
-	public int Execute(Instruction instruction) {
+	public int Execute(Instruction instruction, Pcb pcb) {
 		int returnCode = 0;
 		System.out.println("Now execute instruction \"" + instruction.ToString() + "\"...");
 		
@@ -47,6 +51,13 @@ class Executor {
 			// instruction io
 			InstructionIO ins2 = (InstructionIO)instruction;
 			// TODO
+			int address = mmu.Log_to_Phy(pcb, ins2.address, fastTable, pcb.pageTable, memory, exchangeArea);
+			if (ins2.writeFlag == 1) {
+				memory.set(address, cpu.registers[ins2.reg]);
+				pcb.pageTable.page[ins2.address / 256].changed = true;
+			} else {
+				cpu.registers[ins2.reg] = memory.get(address);
+			}
 			break;
 		case 3:
 			// instruction res

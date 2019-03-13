@@ -21,6 +21,8 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
+import javafx.scene.input.Mnemonic;
+
 public class MainFrame extends JFrame{
 
 	private static final long serialVersionUID = 1L;
@@ -31,7 +33,9 @@ public class MainFrame extends JFrame{
 	Cpu cpu;
 	Memory memory;
 	Disk disk;
+	ExchangeArea exchangeArea;
 	FastTable fastTable;
+	MMU mmu;
 	
 	// semaphores
 	int semaphoreNum;
@@ -91,6 +95,14 @@ public class MainFrame extends JFrame{
 	// semaphore panel
 	private JTable semaphoreTable;
 	private JPanel semaphorePanel;
+	
+	// page table panel
+	private JTable pageTableTable;
+	private JPanel pageTablePanel;
+	
+	// fast table panel
+	private JTable fastTableTable;
+	private JPanel fastTablePanel;
 	
 	public MainFrame() {
 		
@@ -248,7 +260,33 @@ public class MainFrame extends JFrame{
 		semaphorePanel.setSize(300, 170);
 		semaphorePanel.setLocation(580, 380);
 		
-		// TODO memory part
+		// page table panel
+		Object[][] pageTableTableData = {};
+		Object[] pageTableTableHead = {"pageId", "blockId", "exAreaId", "dwell", "vcount", "changed"};
+		pageTableTable = new JTable(pageTableTableData, pageTableTableHead);
+		pageTableTable.setShowGrid(true);
+		pageTableTable.setGridColor(Color.GRAY);
+		pageTableTable.setPreferredScrollableViewportSize(new Dimension(260, 300));
+		
+		pageTablePanel = new JPanel();
+		pageTablePanel.add(new JScrollPane(pageTableTable));
+		pageTablePanel.setBorder(BorderFactory.createTitledBorder("页表"));
+		pageTablePanel.setSize(300, 360);
+		pageTablePanel.setLocation(890, 10);
+		
+		// fast table panel
+		Object[][] fastTableTableData = {};
+		Object[] fastTableTableHead = {"pageId", "blockId", "vcount"};
+		fastTableTable = new JTable(fastTableTableData, fastTableTableHead);
+		fastTableTable.setShowGrid(true);
+		fastTableTable.setGridColor(Color.GRAY);
+		fastTableTable.setPreferredScrollableViewportSize(new Dimension(260, 110));
+		
+		fastTablePanel = new JPanel();
+		fastTablePanel.add(new JScrollPane(fastTableTable));
+		fastTablePanel.setBorder(BorderFactory.createTitledBorder("快表"));
+		fastTablePanel.setSize(300, 170);
+		fastTablePanel.setLocation(890, 380);
 		
         this.setLayout(null);
         this.add(configPanel);
@@ -259,11 +297,13 @@ public class MainFrame extends JFrame{
         this.add(waitQueuePanel);
         this.add(insPanel);
         this.add(semaphorePanel);
+        this.add(pageTablePanel);
+        this.add(fastTablePanel);
         
         this.setTitle("朴素可视化任务管理与虚存管理");
         this.setBackground(Color.LIGHT_GRAY);
         this.setLocation(350, 250);
-        this.setSize(1000, 580);
+        this.setSize(1200, 580);
         this.setResizable(false);
         this.setVisible(true);
 	}
@@ -274,7 +314,9 @@ public class MainFrame extends JFrame{
 		cpu = new Cpu();
 		memory = new Memory();
 		disk = new Disk();
+		exchangeArea = new ExchangeArea(disk);
 		fastTable = new FastTable(3);
+		mmu = new MMU();
 		
 		// initialize semaphores
 		semaphoreNum = 4;
@@ -290,7 +332,7 @@ public class MainFrame extends JFrame{
 		waitQueue = new LinkedList<Pcb>();
 		
 		// create executor
-		executor = new Executor(cpu, memory, disk, fastTable, semaphores, readyQueue, runningQueue, waitQueue);
+		executor = new Executor(cpu, memory, disk, exchangeArea, fastTable, mmu, semaphores, readyQueue, runningQueue, waitQueue);
 		
 	}
 	
@@ -314,7 +356,7 @@ public class MainFrame extends JFrame{
 			try {
 				Thread.sleep(10);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
+				// Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -422,7 +464,35 @@ public class MainFrame extends JFrame{
 		DefaultTableModel semaphoreTableModel = new DefaultTableModel(semaphoreTableData, semaphoreTableHead);
 		semaphoreTable.setModel(semaphoreTableModel);
 		
-		// TODO
+		// update page table table
+		Pcb runningPcb = runningQueue.peek();
+		Object[][] pageTableTableData = {};
+		if (runningPcb != null) {
+			pageTableTableData = new Object[runningPcb.pageTable.length][6];
+			for (i = 0; i < runningPcb.pageTable.length; i++) {
+				pageTableTableData[i][0] = runningPcb.pageTable.page[i].PageId;
+				pageTableTableData[i][1] = runningPcb.pageTable.page[i].BlockId;
+				pageTableTableData[i][2] = runningPcb.pageTable.page[i].exchangeAreaId;
+				pageTableTableData[i][3] = runningPcb.pageTable.page[i].Dwell;
+				pageTableTableData[i][4] = runningPcb.pageTable.page[i].visitcount;
+				pageTableTableData[i][5] = runningPcb.pageTable.page[i].changed;
+			}
+		}
+		Object[] pageTableTableHead = {"pageId", "blockId", "exAreaId", "dwell", "vcount", "changed"};
+		DefaultTableModel pageTableTableModel = new DefaultTableModel(pageTableTableData, pageTableTableHead);
+		pageTableTable.setModel(pageTableTableModel);
+		
+		// update fast table table
+		Object[][] fastTableTableData = new Object[fastTable.length][3];
+		for (i = 0; i < fastTable.length; i++) {
+			fastTableTableData[i][0] = fastTable.page[i].PageId;
+			fastTableTableData[i][1] = fastTable.page[i].BlockId;
+			fastTableTableData[i][2] = fastTable.page[i].visitcount;
+		}
+		Object[] fastTableTableHead = {"pageId", "blockId", "vcount"};
+		DefaultTableModel fastTableTableModel = new DefaultTableModel(fastTableTableData, fastTableTableHead);
+		fastTableTable.setModel(fastTableTableModel);
+		
 	}
 	
 	
@@ -434,7 +504,7 @@ public class MainFrame extends JFrame{
 				try {
 					Thread.sleep(new Double(10 * speedDelay).longValue());
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
+					// Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -453,7 +523,7 @@ public class MainFrame extends JFrame{
 				for (Jcb job : jobs) {
 					if (job.inTime == nowTime) {
 						// create process
-						Primitive.Create(job, readyQueue);
+						Primitive.Create(job, readyQueue, exchangeArea);
 						
 						// change job status
 						job.status = Jcb.JobStatus.IN_QUEUE;
@@ -478,7 +548,7 @@ public class MainFrame extends JFrame{
 							// no more instructions left
 							
 							// withdraw process
-							Primitive.Withdraw(runningPcb, runningQueue, semaphores);
+							Primitive.Withdraw(runningPcb, runningQueue, semaphores, memory);
 							
 							// set job finished
 							runningPcb.oriJob.status = Jcb.JobStatus.FINISHED;
@@ -503,7 +573,7 @@ public class MainFrame extends JFrame{
 								// has enough time for next instruction
 								
 								// execute instruction
-								int returnCode = executor.Execute(nextInstruction);
+								int returnCode = executor.Execute(nextInstruction, runningPcb);
 								
 								switch (returnCode) {
 								case 3:
@@ -544,10 +614,10 @@ public class MainFrame extends JFrame{
 						System.out.println("Pcb " + pcb.pcbId + " has already waited at least " + pcb.waitTimeCount + "ms, deadlock detected!");					
 						
 						// withdraw process
-						Primitive.Withdraw(pcb, waitQueue, semaphores);
+						Primitive.Withdraw(pcb, waitQueue, semaphores, memory);
 						
 						// re-add to ready queue
-						Primitive.Create(pcb.oriJob, readyQueue);
+						Primitive.Create(pcb.oriJob, readyQueue, exchangeArea);
 					}
 					
 					// check whether can be waken up
@@ -584,52 +654,64 @@ public class MainFrame extends JFrame{
 					
 					// get first pcb in ready queue
 					Pcb firstPcb = readyQueue.peek();
-					
-					// select in first pcb
-					Primitive.SelectIn(firstPcb, readyQueue, runningQueue, cpu);
-					
-					// check whether more instructions left
-					if (firstPcb.nowInsIndex >= firstPcb.insNum) {
-						// no more instructions left
+				
+					// check memory space
+					int requiredSpace = (firstPcb.pageTable.length - 5) < 5 ? 5 : (firstPcb.pageTable.length - 5);
+					if (memory.CanAllocate(requiredSpace)) {
+						// memory has enough space
 						
-						// withdraw process
-						Primitive.Withdraw(firstPcb, runningQueue, semaphores);
+						// select in first pcb
+						Primitive.SelectIn(firstPcb, readyQueue, runningQueue, cpu, exchangeArea, memory);
 						
-						// set job finished
-						firstPcb.oriJob.status = Jcb.JobStatus.FINISHED;
-						System.out.println("job " + firstPcb.oriJob.jobId + " finished.");
-					} else {
-						// has more instructions left
-						
-						// get first instruction
-						Instruction firstInstrruction = firstPcb.insList.get(firstPcb.nowInsIndex);
-						
-						// check time piece left time enough or not
-						if (firstPcb.timePieceLeft < firstInstrruction.insLeftTime) {
-							// no enough time for next instruction
+						// check whether more instructions left
+						if (firstPcb.nowInsIndex >= firstPcb.insNum) {
+							// no more instructions left
 							
-							// exchange out
-							Primitive.ExchangeOut(firstPcb, runningQueue, readyQueue, cpu);
+							// withdraw process
+							Primitive.Withdraw(firstPcb, runningQueue, semaphores, memory);
 							
+							// set job finished
+							firstPcb.oriJob.status = Jcb.JobStatus.FINISHED;
+							System.out.println("job " + firstPcb.oriJob.jobId + " finished.");
 						} else {
-							// has enough time for next instruction
+							// has more instructions left
 							
-							// execute instruction
-							int returnCode = executor.Execute(firstInstrruction);
+							// get first instruction
+							Instruction firstInstrruction = firstPcb.insList.get(firstPcb.nowInsIndex);
 							
-							switch (returnCode) {
-							case 3:
-								// now pcb in wait queue
-								break;
-							case 0:
-							default:
-								// modify time
-								System.out.println("Instruction " + firstInstrruction.insId + " time left " + firstInstrruction.insLeftTime + "ms, time piece left " + firstPcb.timePieceLeft + "ms.");
-								firstInstrruction.insLeftTime -= 10;
-								firstPcb.timePieceLeft -= 10;
-								break;
+							// check time piece left time enough or not
+							if (firstPcb.timePieceLeft < firstInstrruction.insLeftTime) {
+								// no enough time for next instruction
+								
+								// exchange out
+								Primitive.ExchangeOut(firstPcb, runningQueue, readyQueue, cpu);
+								
+							} else {
+								// has enough time for next instruction
+								
+								// execute instruction
+								int returnCode = executor.Execute(firstInstrruction, firstPcb);
+								
+								switch (returnCode) {
+								case 3:
+									// now pcb in wait queue
+									break;
+								case 0:
+								default:
+									// modify time
+									System.out.println("Instruction " + firstInstrruction.insId + " time left " + firstInstrruction.insLeftTime + "ms, time piece left " + firstPcb.timePieceLeft + "ms.");
+									firstInstrruction.insLeftTime -= 10;
+									firstPcb.timePieceLeft -= 10;
+									break;
+								}
 							}
 						}
+					} else {
+						// memory has not enough space
+						
+						// turn to the last in ready queue
+						readyQueue.remove(firstPcb);
+						readyQueue.offer(firstPcb);
 					}
 					
 				}
@@ -644,7 +726,7 @@ public class MainFrame extends JFrame{
 				try {
 					Thread.sleep(new Double(10 * speedDelay).longValue());
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
+					// Auto-generated catch block
 					e.printStackTrace();
 				}
 			}

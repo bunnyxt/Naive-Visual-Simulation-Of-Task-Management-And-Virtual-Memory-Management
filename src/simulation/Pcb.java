@@ -20,6 +20,8 @@ class Pcb {
 	
 	public PageTable pageTable;
 	
+	public boolean MemoryAllocated;
+	
 	public Pcb(Jcb job, int pcbId) {
 		oriJob = job;
 		this.pcbId = pcbId;
@@ -35,6 +37,9 @@ class Pcb {
 		context = new CpuContext();
 
 		pageTable = new PageTable(job.memBlockRequired);
+		pageTable.usedlength = pageTable.length;
+		
+		MemoryAllocated = false;
 	}
 	
 	public enum ProcessStatus {

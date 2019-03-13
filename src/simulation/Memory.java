@@ -34,41 +34,45 @@ class Memory {
 		}
 	}
 	
-	//分配资源 TODO size-5?
-	public int AllocationSpace(int size, int pcbId) {
-		if((size - 5) <= freeSpace) {//如果空闲块数满足，则分配
-			int i = 0;
-			while(size - 5 > 0) {
-				if(blockTable.block[i].BlockState == 0) {//找出空闲的块
-					blockTable.block[i].BlockState = 1;//置占用标志
-					blockTable.block[i].OwnerPro = pcbId;//该块分配给的作业
-					freeSpace--;//从空闲块数中减去本次占用块数
-					usedSpace++;
-					size--;
-					//相应的页对应
-				}
-				i++;
-			}
-			return 1;//分配成功
-		}
-		else {//如果空闲块数不足则令进程等待
-			// TODO
-			return 0;//分配失败
+	public boolean CanAllocate(int size) {
+		if (size <= freeSpace) {
+			return true;
+		} else {
+			return false;
 		}
 	}
 	
+	//分配资源
+	public int[] AllocationSpace(int size, int pcbId) {
+		int[] freeBlockIndexes = null;
+		if(CanAllocate(size)) {
+			freeBlockIndexes = new int[size];
+			int count = 0;
+			for (int i = 0; i < blockNum; i++) {
+				if (blockTable.block[i].BlockState == 0) {
+					freeBlockIndexes[count++] = i;
+					blockTable.block[i].BlockState = 1;//置占用标志  1
+					blockTable.block[i].OwnerPro = pcbId;//该块分配给的作业
+					freeSpace--;//从空闲块数中减去本次占用块数
+					usedSpace++;
+					if (count == size) {
+						break;
+					}
+				}
+			}
+		}
+		return freeBlockIndexes;
+	}
+	
 	//回收资源
-	public void RecycleSpace(int size, int ProId) {
-		int i = 0;
-		while(size > 0) {
-			if(blockTable.block[i].OwnerPro == ProId) {//找出需要归还的块
+	public void RecycleSpace(int pcbId) {
+		for (int i = 0; i < blockNum; i++) {
+			if(blockTable.block[i].OwnerPro == pcbId) {//找出需要归还的块
 				blockTable.block[i].BlockState = 0;//置占用标志为 0
 				blockTable.block[i].OwnerPro = -1;//清空占有进程标志位
 				freeSpace++;//从空闲块数中减去本次占用块数
 				usedSpace--;
-				size--;
 			}
-			i++;
 		}
 	}
 	

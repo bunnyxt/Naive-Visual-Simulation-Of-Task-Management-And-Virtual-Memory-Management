@@ -10,7 +10,7 @@ public abstract class Table {
 	Table(int pageNum) {
 		Page page1[] = new Page[pageNum];
 		for (int i = 0; i < pageNum; i++) {
-			page1[i] = new Page(-1, -1, 0, 0);
+			page1[i] = new Page(i, -1, 0, 0);
 		}
 		page = page1;
 		length = pageNum;
@@ -57,7 +57,7 @@ public abstract class Table {
 	//修改访问次数
 	void ChangeVisit(int pageid) {
 		for(int i = 0; i < length; i++) {
-			if(page[i].PageId != pageid) {
+			if(page[i].PageId != pageid && page[i].BlockId != -1) {
 				page[i].visitcount = page[i].visitcount + 1;
 			} else {
 				page[i].visitcount = 0;

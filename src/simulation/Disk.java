@@ -8,9 +8,9 @@ import java.io.RandomAccessFile;
 
 public class Disk {
 	
-	private final int trackNum;
-	private final int sectorNum;
-	private final int sectorSize;
+	public final int trackNum;
+	public final int sectorNum;
+	public final int sectorSize;
 	private RandomAccessFile storage;
 	
 	public Disk() {

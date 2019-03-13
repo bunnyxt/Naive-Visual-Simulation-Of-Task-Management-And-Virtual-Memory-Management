@@ -15,9 +15,9 @@ class InstructionIO extends Instruction {
 	
 	public String ToString() {
 		if (writeFlag == 1) {
-			return address + " -> r" + reg;
-		} else {
 			return "r" + reg + " -> " + address;
+		} else {
+			return address + " -> r" + reg;
 		}
 	}
 	
