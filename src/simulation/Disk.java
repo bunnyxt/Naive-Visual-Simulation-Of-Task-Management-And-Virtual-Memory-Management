@@ -23,7 +23,7 @@ public class Disk {
 			}
 			storage = new RandomAccessFile("disk", "rw");
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			// Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -49,7 +49,7 @@ public class Disk {
 			fop.flush();
 			fop.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			// Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -60,7 +60,7 @@ public class Disk {
 			try {
 				b = storage.readByte();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				// Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -72,7 +72,7 @@ public class Disk {
 			try {
 				storage.writeByte(data);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				// Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -87,7 +87,7 @@ public class Disk {
 						storage.seek(pos);
 						return true;
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
+						// Auto-generated catch block
 						e.printStackTrace();
 					}
 				}

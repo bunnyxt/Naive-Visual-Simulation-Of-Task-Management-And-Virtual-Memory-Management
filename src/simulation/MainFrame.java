@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -20,8 +21,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
-
-import javafx.scene.input.Mnemonic;
 
 public class MainFrame extends JFrame{
 
@@ -61,6 +60,15 @@ public class MainFrame extends JFrame{
 	// time proposed
 	int nowTime = 0;
 	
+	// busy flag
+	boolean busyFlag;
+	
+	// update flag
+	boolean updateFlag;
+	
+	// pause flag
+	boolean pauseFlag;
+	
 	
 	// visual components
 	
@@ -70,6 +78,7 @@ public class MainFrame extends JFrame{
 	private JLabel delayRatioLabel;
 	private JTextField delayRatioTextField;
 	private JButton startButton;
+	private JButton pauseButton;
 	private JPanel configPanel;
 	
 	// jcb panel
@@ -156,14 +165,34 @@ public class MainFrame extends JFrame{
 			}
 		});
 		
+		pauseButton = new JButton("暂停/继续");
+		pauseButton.setPreferredSize(new Dimension(210, 30));
+		pauseButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				
+				if (runningFlag == true) {
+					pauseFlag = !pauseFlag;
+					if (pauseFlag == true) {
+						pauseButton.setText("继续");
+					} else {
+						pauseButton.setText("暂停");
+					}
+				}
+				
+			}
+		});
+		pauseButton.setEnabled(false);
+		
 		configPanel = new JPanel();
 		configPanel.add(fileNameLabel);
 		configPanel.add(fileNameTextField);
 		configPanel.add(delayRatioLabel);
 		configPanel.add(delayRatioTextField);
 		configPanel.add(startButton);
+		configPanel.add(pauseButton);
 		configPanel.setBorder(BorderFactory.createTitledBorder("配置设置"));
-		configPanel.setSize(250, 110);
+		configPanel.setSize(250, 150);
 		configPanel.setLocation(10, 10);
 		
 		// jcb panel
@@ -172,13 +201,13 @@ public class MainFrame extends JFrame{
 		jcbTable = new JTable(jcbTableData, jcbTableHead);
 		jcbTable.setShowGrid(true);
 		jcbTable.setGridColor(Color.GRAY);
-		jcbTable.setPreferredScrollableViewportSize(new Dimension(210, 250));
+		jcbTable.setPreferredScrollableViewportSize(new Dimension(210, 210));
 		
 		jcbPanel = new JPanel();
 		jcbPanel.add(new JScrollPane(jcbTable));
 		jcbPanel.setBorder(BorderFactory.createTitledBorder("JCB表"));
-		jcbPanel.setSize(250, 310);
-		jcbPanel.setLocation(10, 130);
+		jcbPanel.setSize(250, 270);
+		jcbPanel.setLocation(10, 170);
 		
 		// time panel
 		timeLabel = new JLabel("0ms");
@@ -344,6 +373,9 @@ public class MainFrame extends JFrame{
 		startButton.setEnabled(false);
 		fileNameTextField.setEnabled(false);
 		delayRatioTextField.setEnabled(false);
+		pauseButton.setText("暂停");
+		pauseButton.setEnabled(true);
+		pauseFlag = false;
 		
 		// time proposed
 		nowTime = 0;
@@ -367,6 +399,8 @@ public class MainFrame extends JFrame{
 		startButton.setEnabled(true);
 		fileNameTextField.setEnabled(true);
 		delayRatioTextField.setEnabled(true);
+		pauseButton.setText("暂停/继续");
+		pauseButton.setEnabled(false);
 		
 		updateUI();
 		JOptionPane.showMessageDialog(null, "运行完成", "提示", JOptionPane.INFORMATION_MESSAGE);
@@ -500,7 +534,17 @@ public class MainFrame extends JFrame{
 		
 		public void run() {
 			while (runningFlag == true) {
-				updateUI();
+				if (busyFlag == false) {
+					try {
+						updateFlag = true;
+						if (pauseFlag != true) {
+							updateUI();
+						}
+						updateFlag = false;
+					} catch (ConcurrentModificationException e) {
+						System.out.println(e.toString());
+					}
+				}
 				try {
 					Thread.sleep(new Double(10 * speedDelay).longValue());
 				} catch (InterruptedException e) {
@@ -516,6 +560,17 @@ public class MainFrame extends JFrame{
 		
 		public void run() {
 			while (!JobHelper.AllJobsFinished(jobs)) {
+				
+				while (updateFlag == true || pauseFlag == true) {
+					try {
+						Thread.sleep(10);
+					} catch (InterruptedException e) {
+						// Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				
+				busyFlag = true;
 				
 				System.out.println("---------- " + nowTime + "ms ----------");
 				
@@ -721,6 +776,8 @@ public class MainFrame extends JFrame{
 				
 				// modify now time
 				nowTime += 10;
+				
+				busyFlag = false;
 				
 				// make time delay
 				try {
